@@ -313,62 +313,54 @@ Di navigator DBeaver, buka Tempopress Local -> Databases -> tempopress -> Schema
 Tabel users berisi Admin Demo, SPV Demo, dan Mechanic Demo. Lihat
 [rincian seed](docs/DATABASE.md#seed-user-demo) untuk ID tetap masing-masing user.
 
-## Pemeriksaan
+## Menjalankan service
 
-Di folder `backend`:
+Gunakan salah satu mode berikut dari root project.
 
-```powershell
-npm run build
-npm run lint
-npm test
-```
+### Semua service melalui Docker Compose
 
-Test transaksi dengan PostgreSQL asli (service database harus berjalan):
+Pastikan Docker Desktop berjalan, lalu jalankan:
 
 ```powershell
-npm run test:database
+docker compose up --build
 ```
 
-Test ini memakai konfigurasi PG yang sama dengan backend. Test transaksi memakai
-tabel TEMP per koneksi; test schema membuat namespace terisolasi dan menghapusnya
-setelah selesai. Tabel bisnis dalam public tidak diubah. Kasusnya mencakup
-transaksi, setup awal/ulang/bersamaan, checksum, rollback migration gagal,
-constraint, FK, nullable/default, qty, tanggal, serta workflow HTTP dengan dan tanpa
-sparepart, pembatasan role, validasi, rollback, dan request bersamaan.
-Test schema/workflow memerlukan izin
-membuat schema, yang sudah tersedia pada user PostgreSQL lokal Compose.
-Service bisnis nantinya menggunakan token TRANSACTION_MANAGER agar tidak
-bergantung pada tipe koneksi PostgreSQL.
+Buka frontend di http://localhost:5173. Backend tersedia di http://localhost:3000.
+Database, migration, dan akun demo disiapkan otomatis.
 
-Di folder `frontend`:
+Untuk menghentikan service tanpa menghapus data:
 
 ```powershell
-npm run build
-npm run lint
+docker compose down
 ```
 
-Pemeriksaan manual: buka frontend, login sebagai admin, lalu buat WO pertama.
-Setelah submit, ganti akun melalui popup login role SPV untuk penugasan; lanjutkan persiapan
-sebagai admin, start sebagai mekanik, dan completion sebagai admin. Jalur sparepart
-memerlukan persetujuan spv sebelum start. Panduan UI ada di docs/FRONTEND.md; contoh API/PowerShell
-ada di docs/API.md. Endpoint `/api/health` tetap tersedia. Response health sukses:
+### Backend dan frontend secara terpisah
 
-```json
-{"status":"ok","service":"backend","database":"connected"}
-```
-
-Test HTTP backend memverifikasi response 200 ketika pemeriksaan database berhasil
-dan response 503 ketika pemeriksaan gagal. Test tersebut mengganti akses database
-dengan test double; koneksi PostgreSQL asli diverifikasi melalui Docker Compose.
-
-Verifikasi Docker Compose sudah berhasil dengan
-`docker compose up --build -d --wait --wait-timeout 180`. Ketiga service berstatus
-healthy. Query dari container backend berhasil membaca database `tempopress`,
-frontend tersaji melalui Nginx, dan health API mengembalikan HTTP 200 dengan
-`database: connected` baik melalui port backend maupun proxy frontend.
-
-Untuk melihat status service yang sedang berjalan:
+Prasyarat: Node.js 22 dan npm. Jalankan PostgreSQL dari root project:
 
 ```powershell
-docker compose ps
+docker compose up -d --wait database
 ```
+
+Di terminal backend, mulai dari root project:
+
+```powershell
+cd backend
+npm ci
+npm run db:setup
+npm run start:dev
+```
+
+Backend berjalan di http://localhost:3000. Perintah setup menjalankan migration
+dan seed; koneksi default mengikuti PostgreSQL lokal pada port 5432.
+
+Di terminal frontend yang berbeda, mulai dari root project:
+
+```powershell
+cd frontend
+npm ci
+npm run dev
+```
+
+Frontend berjalan di http://localhost:5173 dan meneruskan request `/api` ke backend.
+Hentikan proses frontend/backend dengan **Ctrl+C** di terminal masing-masing.
