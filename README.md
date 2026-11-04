@@ -58,20 +58,123 @@ GET /api/health dan POST /api/auth/login dapat diakses sebelum login. Endpoint
 users, WO, approval, dan foto memerlukan session yang valid. Foto juga mengikuti
 pembatasan akses WO induknya. Backend mengambil identitas dan role dari database.
 
-## Asumsi dan batas scope
+## Asumsi implementasi dan batas scope
 
-- Admin membuat draft dan mengirim WO ke SPV; SPV menugaskan mechanic.
-- Admin menyiapkan pekerjaan/pengajuan sparepart; SPV menyetujui sparepart.
-- Mechanic menandai mulai bekerja; Admin memasukkan waktu selesai untuk completion.
-- Satu SPV tujuan dan satu mechanic per WO. SPV/Mechanic hanya melihat penugasannya;
-  Admin melihat semua WO. Jika hanya ada satu SPV, tujuan dipilih otomatis.
-- Pengajuan sparepart opsional; satu pengajuan berisi beberapa item. Foto opsional,
-  satu JPG/PNG per item, maksimal 2 MiB dan 10 foto per pengajuan.
-- Foto tersimpan pada volume Docker; database menyimpan path relatif.
-- Authentication merupakan bonus yang dipilih. Akun demo dibuat otomatis, tanpa registrasi.
-- Pagination memakai daftar hasil API yang sudah dibatasi berdasarkan akses pengguna.
-- Batas judul/deskripsi/nama sparepart/catatan: 50/100/30/100 karakter.
-- Aplikasi ditujukan untuk demo localhost. Tidak mencakup modul ERP lain.
+Bagian ini mendokumentasikan keputusan implementasi untuk detail yang belum
+ditentukan secara eksplisit dalam requirement. Penambahan fitur dijelaskan
+terpisah agar reviewer dapat membedakannya dari workflow utama technical test.
+
+- **Status proses:** tahap WO menggunakan `DRAFT`, `SUBMITTED`, `ASSIGNED`,
+  `WAITING_SPAREPART_APPROVAL`, `READY_TO_WORK`, `WORKING`, dan `COMPLETED`.
+  Status dipisahkan agar tahap penugasan, persiapan, dan persetujuan dapat dilacak.
+- **Draft dan submit terpisah:** membuat WO menyimpan draft terlebih dahulu.
+  WO diteruskan kepada SPV setelah Admin memilih **Submit Work Order**.
+- **Peninjauan WO oleh SPV:** label UI **Menunggu Approval SPV** mengacu pada
+  status `SUBMITTED`. SPV meninjau lalu menugaskan mechanic; aksi penugasan
+  melanjutkan WO ke `ASSIGNED`, tanpa tahap approval WO tambahan.
+- **Penerima dan akses:** satu WO memiliki satu SPV tujuan dan satu mechanic.
+  SPV tujuan dipilih otomatis jika hanya ada satu; jika lebih, Admin memilihnya.
+  Admin melihat semua WO, SPV hanya WO non-draft yang dikirim kepadanya, dan
+  mechanic hanya WO yang ditugaskan kepadanya. Backend memeriksa akses ini.
+- **Persiapan oleh Admin:** setelah penugasan mechanic, Admin meninjau atau
+  memperbarui judul/deskripsi dan menentukan kebutuhan sparepart. Penugasan
+  belum berarti pekerjaan sudah dimulai.
+- **Sparepart opsional:** tanpa sparepart, WO langsung siap dikerjakan setelah
+  persiapan. Jika dibutuhkan, Admin membuat satu pengajuan berisi satu atau
+  beberapa item dengan nama dan jumlah bilangan bulat positif. Pengajuan harus
+  disetujui SPV tujuan sebelum mechanic dapat mulai bekerja.
+- **Waktu dan completion:** `start_date` diisi backend ketika mechanic yang
+  ditugaskan mulai bekerja. Admin menyelesaikan WO dengan `end_date` yang tidak
+  lebih awal dari waktu mulai. WO yang sudah `COMPLETED` tidak diproses ulang.
+- **Batas input:** judul maksimal 50 karakter, deskripsi 100, nama sparepart 30,
+  dan catatan persetujuan 100. Counter tampil di UI; backend memvalidasi batasnya.
+- **Penyederhanaan demo:** tidak menambahkan rejection, revisi approval, reopen,
+  pembatalan, penerimaan barang, atau modul inventory/ERP lain. Pagination
+  5/10/20 menggunakan daftar hasil API yang sudah dibatasi sesuai akses akun.
+
+## Fitur tambahan dan alasan bisnis
+
+### Foto opsional per item sparepart
+
+Foto merupakan pengembangan UX dan proses bisnis yang dipilih dalam implementasi,
+di luar workflow inti. Foto membantu SPV mengenali sparepart yang diajukan dan
+memvalidasi kebutuhan secara visual, sehingga review lebih mudah dibanding hanya
+membaca nama dan jumlah item. Foto adalah informasi pendukung; pengajuan tetap
+dapat diproses tanpa foto dan aturan persetujuan tidak berubah.
+
+- Admin dapat menambahkan satu foto JPG/PNG per item pada form pengajuan.
+- Maksimal 2 MiB per foto dan 10 foto per pengajuan; setiap item boleh tanpa foto.
+- Preview tersedia sebelum submit, dan foto tampil di detail pengajuan untuk
+  ditinjau SPV bersama nama, jumlah, serta catatan persetujuan.
+- File tersimpan pada volume Docker `sparepart_uploads`; database menyimpan path
+  relatif. Akses foto mengikuti akses WO induk dan membutuhkan session valid.
+
+### Autentikasi dan kesesuaian role
+
+Requirement menyatakan autentikasi tidak wajib dan dapat menjadi bonus;
+implementasi ini memilih menambahkannya. Tujuannya memastikan role yang digunakan
+sesuai dengan akun yang berhasil diverifikasi, sehingga pengguna tidak cukup
+mengganti pilihan role untuk memperoleh hak Admin, SPV, atau Mechanic.
+
+- Login memakai akun demo yang di-seed otomatis, tanpa fitur registrasi.
+- Backend menentukan identitas dan role dari akun/session, lalu memvalidasi
+  izin serta penugasan pada setiap aksi. Pilihan dropdown bukan sumber otorisasi.
+- Password disimpan sebagai hash scrypt; session memakai cookie HttpOnly dan
+  dapat dipulihkan saat refresh. Logout mencabut session.
+- Dropdown role di bawah username membuka popup login untuk akun tujuan.
+  Role baru aktif setelah username/password benar dan cocok dengan role tujuan.
+- Password salah, role tidak sesuai, atau popup dibatalkan mempertahankan
+  session lama. Setelah login tujuan berhasil, session lama dicabut dan session
+  baru dibuat dalam satu transaksi; cache WO dibersihkan dan panel tujuan dibuka.
+
+## Flow aplikasi lengkap
+
+Setelah menjalankan Docker Compose, buka `http://localhost:5173` dan login sebagai
+Admin. Database baru berisi tiga akun demo dengan daftar WO kosong. Untuk mencoba
+peran berikutnya, gunakan dropdown role dan login melalui popup, atau logout lalu
+login menggunakan akun terkait. Informasi akun tersedia di bagian Akun demo.
+
+| Tahap | Pelaku dan aksi | Hasil/status |
+| --- | --- | --- |
+| 1. Buat WO | Admin memilih **Buat Work Order**, mengisi judul dan deskripsi opsional, lalu menyimpan. | WO tersimpan sebagai `DRAFT`. |
+| 2. Submit | Admin membuka detail draft dan memilih **Submit Work Order**, dengan SPV tujuan. | `SUBMITTED`; UI menampilkan **Menunggu Approval SPV**. WO mulai terlihat oleh SPV tujuan. |
+| 3. Tinjau dan tugaskan | SPV tujuan meninjau WO lalu memilih mechanic yang akan mengerjakan. | `ASSIGNED`; mechanic terpilih dapat melihat WO. Pekerjaan masih menunggu persiapan Admin. |
+| 4A. Persiapan tanpa sparepart | Admin meninjau/memperbarui informasi lalu menyelesaikan persiapan tanpa pengajuan sparepart. | `READY_TO_WORK`; lanjut ke tahap 6. |
+| 4B. Persiapan dengan sparepart | Admin menambahkan nama dan jumlah item, serta foto opsional, kemudian mengirim pengajuan. | Request `PENDING`; WO `WAITING_SPAREPART_APPROVAL`. |
+| 5. Persetujuan sparepart | SPV tujuan membuka detail, memeriksa item/foto, lalu menyetujui; catatan persetujuan opsional. | Request `APPROVED`; WO menjadi `READY_TO_WORK` setelah tidak ada pengajuan terkait yang masih pending. |
+| 6. Mulai pekerjaan | Mechanic yang ditugaskan membuka WO siap dikerjakan dan menjalankan aksi mulai bekerja. | `WORKING`; backend mencatat waktu mulai. |
+| 7. Selesaikan WO | Admin membuka detail pekerjaan yang sedang berjalan, mengisi waktu selesai yang valid, lalu memilih **Selesaikan Work Order**. | `COMPLETED`; waktu selesai tersimpan dan aksi progres dikunci. |
+
+Ringkasan jalur **tanpa sparepart**:
+
+```text
+Admin: DRAFT -> SUBMITTED
+SPV: ASSIGNED
+Admin: READY_TO_WORK
+Mechanic: WORKING
+Admin: COMPLETED
+```
+
+Ringkasan jalur **dengan sparepart**:
+
+```text
+Admin: DRAFT -> SUBMITTED
+SPV: ASSIGNED
+Admin: WAITING_SPAREPART_APPROVAL (item + foto opsional; request PENDING)
+SPV: READY_TO_WORK (request APPROVED)
+Mechanic: WORKING
+Admin: COMPLETED
+```
+
+Mechanic tidak dapat memulai WO yang masih menunggu persiapan atau approval
+sparepart. SPV/Mechanic tidak dapat membuka draft milik Admin atau WO di luar
+penugasannya, termasuk melalui URL/API langsung. Completion dilakukan Admin,
+sedangkan persetujuan sparepart dilakukan SPV.
+
+Setiap aksi sukses menampilkan popup konfirmasi di atas detail yang diburamkan;
+menutup popup mengembalikan pengguna ke daftar WO. List serta panel perhatian
+menunjukkan status dan tugas yang masih perlu ditindaklanjuti sesuai role.
+Validasi yang gagal mempertahankan form agar data dapat diperbaiki.
 
 ## Akun demo
 
@@ -245,7 +348,7 @@ npm run lint
 ```
 
 Pemeriksaan manual: buka frontend, login sebagai admin, lalu buat WO pertama.
-Setelah submit, logout dan login sebagai spv untuk penugasan; lanjutkan persiapan
+Setelah submit, ganti akun melalui popup login role SPV untuk penugasan; lanjutkan persiapan
 sebagai admin, start sebagai mekanik, dan completion sebagai admin. Jalur sparepart
 memerlukan persetujuan spv sebelum start. Panduan UI ada di docs/FRONTEND.md; contoh API/PowerShell
 ada di docs/API.md. Endpoint `/api/health` tetap tersedia. Response health sukses:
