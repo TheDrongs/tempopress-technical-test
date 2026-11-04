@@ -9,24 +9,6 @@ Frontend React menyediakan list dan modal detail, form login, serta
 upload/review foto sparepart. Docker Compose menjalankan frontend, backend, dan
 PostgreSQL.
 
-**Status saat ini:** fondasi project, arsitektur Step 3, database Step 4, dan API
-workflow Step 5 serta frontend/integrasi Step 6–7 sudah diimplementasikan. Empat
-tabel bisnis, migration, dan tiga user demo tersedia. Kedua jalur workflow dapat
-dijalankan dari UI sampai completed. Verifikasi final Step 8 sudah lulus;
-[laporan pengujian](docs/VERIFICATION.md) mencatat 73 automated test, kedua jalur
-melalui UI Docker dengan API asli, dan persistensi setelah container dibuat ulang.
-Authentication bonus sudah ditambahkan: login username/password, session cookie
-HttpOnly selama delapan jam, dan logout. Identitas berasal dari session backend;
-header X-User-Id tidak digunakan untuk memilih pengguna. Pagination tabel tersedia
-dengan pilihan 5/10/20 data, default lima, dan indikator Page X of Y.
-Verifikasi terbaru mencakup **96 automated test**, CSP, batas input, dan popup pergantian akun;
-lihat [Hardening dan hasil pengujian](docs/HARDENING.md). Baseline authentication ada di
-[Authentication dan Pagination](docs/AUTHENTICATION.md). Laporan Step 8 di atas
-mencatat baseline sebelum revisi authentication.
-Tambahan foto opsional tersedia dari form upload sampai preview dan review SPV.
-Backend menggunakan driver `pg`. Health endpoint menjalankan `SELECT 1`: HTTP 200
-jika database dapat diakses, atau HTTP 503 jika koneksi/query gagal.
-
 ## Stack
 
 - Backend: NestJS + TypeScript
