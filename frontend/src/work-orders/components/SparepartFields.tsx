@@ -90,7 +90,7 @@ export function SparepartFields({
           <fieldset
             disabled={disabled}
             key={item.key}
-            className="grid min-w-0 grid-cols-[minmax(0,1fr)_72px] items-center gap-3 border-t p-4 first:border-t-0 lg:grid-cols-[minmax(0,1fr)_80px_minmax(240px,1fr)_40px]"
+            className="grid min-w-0 grid-cols-[minmax(0,1fr)_72px] items-start gap-3 border-t p-4 first:border-t-0 lg:grid-cols-[minmax(0,1fr)_80px_minmax(240px,1fr)_40px]"
           >
             <legend className="sr-only">Sparepart {index + 1}</legend>
             <div>
@@ -168,7 +168,7 @@ export function SparepartFields({
             <Button
               variant="destructive"
               size="icon"
-              className="col-start-2 row-start-3 justify-self-end lg:col-auto lg:row-auto"
+              className="col-start-2 row-start-3 justify-self-end lg:col-auto lg:row-auto lg:h-10"
               aria-label={`Hapus item ${index + 1}`}
               disabled={disabled}
               onClick={() => {
@@ -230,7 +230,7 @@ function DraftPhoto({
         role="group"
         {...validation.fieldProps(`photo-${item.key}`)}
         className={cn(
-          'flex items-center gap-3 rounded-lg border border-transparent p-1',
+          'flex min-h-10 items-center gap-3 rounded-lg border border-transparent px-1',
           validation.fieldProps(`photo-${item.key}`).className,
           validation.issues[`photo-${item.key}`] && 'border-destructive',
         )}
