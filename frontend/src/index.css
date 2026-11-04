@@ -1,0 +1,96 @@
+@import 'tailwindcss';
+
+@theme inline {
+  --font-sans: 'Segoe UI', Inter, ui-sans-serif, system-ui, sans-serif;
+  --color-background: #f5f8fa;
+  --color-foreground: #14212b;
+  --color-muted: #f1f5f6;
+  --color-muted-foreground: #667481;
+  --color-primary: #078778;
+  --color-primary-foreground: #ffffff;
+  --color-border: #e0e7eb;
+  --color-input: #cfd9df;
+  --color-ring: #078778;
+  --color-destructive: #c43b3b;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply m-0 bg-background font-sans text-foreground antialiased;
+  }
+  button:not(:disabled),
+  select:not(:disabled),
+  [role='button'] {
+    cursor: pointer;
+  }
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+  button:focus-visible,
+  a:focus-visible {
+    @apply outline-2 outline-offset-4 outline-primary;
+  }
+  ::selection {
+    background: #c9eee5;
+  }
+}
+
+@keyframes enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@utility animate-in {
+  animation: enter 150ms ease-out;
+}
+@keyframes field-shake-a {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20%,
+  60% {
+    transform: translateX(-4px);
+  }
+  40%,
+  80% {
+    transform: translateX(4px);
+  }
+}
+@keyframes field-shake-b {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20%,
+  60% {
+    transform: translateX(-4px);
+  }
+  40%,
+  80% {
+    transform: translateX(4px);
+  }
+}
+@utility animate-field-shake-a {
+  animation: field-shake-a 320ms ease-in-out;
+}
+@utility animate-field-shake-b {
+  animation: field-shake-b 320ms ease-in-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
