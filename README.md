@@ -35,28 +35,14 @@ validasi runtime. Service mengatur aturan role/status dan transaksi, sedangkan
 query berada di repository. Driver tetap pg; perubahan progres memakai kunci
 baris WO agar request bersamaan tidak diproses ganda.
 
-## Workflow dan rencana arsitektur
+## Dokumentasi
 
-Workflow dan asumsi Step 2 telah disepakati. Rincian role, tujuh status WO,
-perpindahan status, serta aturan sparepart dan completion dicatat bersama
-arsitektur backend dan status implementasi kerangka Step 3 di
-[Workflow dan Rencana Arsitektur Work Order](docs/WORKFLOW.md).
-
-Struktur 31 kolom (termasuk image_path dan SPV tujuan), constraint, relasi, migration, dan seed dijelaskan di
-[Database Work Order](docs/DATABASE.md).
-
-Kontrak endpoint, body/response, error, identitas pelaku, dan contoh mencoba
-workflow tersedia pada [API Work Order - Step 5](docs/API.md).
-
-Aturan foto, kontrak multipart, volume penyimpanan, dan akses gambar dijelaskan di
-[Foto Opsional Sparepart](docs/SPAREPART_PHOTOS.md).
-
-Struktur folder FE, pembagian state, route modal, cara mencoba alur per role,
-dan pengujian dijelaskan di [Frontend Work Order](docs/FRONTEND.md).
-
-GET /api/health dan POST /api/auth/login dapat diakses sebelum login. Endpoint
-users, WO, approval, dan foto memerlukan session yang valid. Foto juga mengikuti
-pembatasan akses WO induknya. Backend mengambil identitas dan role dari database.
+- [Frontend](docs/frontend.md): halaman, komponen, state, dan interaksi UI.
+- [Backend](docs/backend.md): arsitektur, API, transaksi, dan foto sparepart opsional.
+- [Database](docs/database.md): tabel, relasi, migration/seed, dan penyimpanan foto opsional.
+- [Security](docs/security.md): validasi, SQL injection/XSS, CSP, dan proteksi akses.
+- [Authentication](docs/authentication.md): login, session, logout, dan popup pergantian role.
+- [Workflow](docs/workflow.md): alur lengkap, status, tanggung jawab, dan asumsi bisnis.
 
 ## Asumsi implementasi dan batas scope
 
@@ -311,7 +297,7 @@ database dalam keadaan berjalan. Akun database ini berbeda dari user aplikasi.
 Di navigator DBeaver, buka Tempopress Local -> Databases -> tempopress -> Schemas
 -> public -> Tables. Refresh node Tables jika daftar lama masih tersimpan.
 Tabel users berisi Admin Demo, SPV Demo, dan Mechanic Demo. Lihat
-[rincian seed](docs/DATABASE.md#seed-user-demo) untuk ID tetap masing-masing user.
+[rincian seed](docs/database.md#seed-user-demo) untuk ID tetap masing-masing user.
 
 ## Menjalankan service
 

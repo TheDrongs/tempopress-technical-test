@@ -2,7 +2,7 @@
 
 React + TypeScript + Vite dengan Tailwind, komponen pola shadcn/Radix, Axios,
 Zustand, dan React Router. Lihat [README utama](../README.md) untuk setup lengkap
-dan [dokumentasi frontend](../docs/FRONTEND.md) untuk struktur dan alur UI.
+dan [dokumentasi frontend](../docs/frontend.md) untuk struktur dan alur UI.
 
 ```sh
 npm ci
