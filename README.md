@@ -1,7 +1,7 @@
 # Tempopress - Work Order Technical Test
 
 **Paket penyerahan selesai disiapkan dan diuji dari hasil ekstraksi ZIP.**
-Lihat [verifikasi paket](docs/SUBMISSION.md). Mulai dengan bagian
+Mulai dengan bagian
 [Menjalankan dengan Docker](#menjalankan-dengan-docker) di bawah.
 
 Backend Work Order menyediakan workflow API dari create sampai completion.

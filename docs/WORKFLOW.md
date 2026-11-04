@@ -742,5 +742,5 @@ revisi. Kontrak: [Authentication dan Pagination](AUTHENTICATION.md).
   service sehat. Lima migration, tiga login demo, health, CSP, dan logout teruji.
 - [x] Project/volume tes dibersihkan dan snapshot data utama identik.
 
-Rincian penyerahan ada di [SUBMISSION.md](SUBMISSION.md). ZIP disiapkan untuk
+ZIP disiapkan untuk
 dikirim oleh kandidat; tidak dikirim ke pihak lain dari workspace ini.
