@@ -372,30 +372,3 @@ Untuk melihat status service yang sedang berjalan:
 ```powershell
 docker compose ps
 ```
-
-Verifikasi Step 5: build/lint backend, dua test health, dan 31 test integrasi
-database/API berhasil. API langsung dan proxy frontend memverifikasi daftar
-user/WO, header pelaku, role, validasi DTO, serta health. Test workflow memakai
-schema terisolasi yang dibersihkan setelah selesai; data bisnis public tidak
-diisi fixture pengujian.
-
-Tambahan foto opsional sudah diverifikasi dengan build/lint, dua test health,
-dan 44 test integrasi database/API. Upload melalui Nginx dan persistensi foto
-setelah container backend dibuat ulang berhasil. Data/file uji dibersihkan.
-
-Verifikasi frontend Step 6–7: build/lint, dua belas unit test, dan sembilan test browser
-lulus. Kedua jalur sampai completed juga diuji melalui UI Docker dengan API asli,
-termasuk upload, preview, approval, dan reload deep link. Data/file uji dibersihkan.
-Jalankan `npm test` dan `npm run test:e2e` dari frontend untuk mengulang test FE;
-test browser membutuhkan Chrome atau Edge terpasang.
-
-Revisi penugasan: list/detail dibatasi di backend. Admin melihat semua WO, SPV
-hanya WO non-draft yang dikirim kepadanya, Mechanic hanya WO yang ditugaskan
-kepadanya. Migration 003 menambah assigned_spv_id; empat tabel bisnis tetap cukup.
-Suite backend kini mencakup 65 test integrasi dan dua test health. Seluruh aksi
-frontend memakai popup sukses di atas detail blur, lalu kembali ke list saat ditutup.
-
-Audit dependency backend saat setup melaporkan dua temuan moderate pada tooling
-development (`@nestjs/cli` dan dependency `minimatch`), bukan dependency runtime.
-Perbaikan otomatis yang ditawarkan npm menurunkan major version CLI; perubahan
-tersebut belum diterapkan.
